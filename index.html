@@ -1,214 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Paste Chaos Here</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <title>SummifyAI — Paste Chaos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<style>
-/* =====================
-   BASE STYLES
-===================== */
-:root {
-  --bg: #0b0b0b;
-  --panel: #161616;
-  --border: #2a2a2a;
-  --text: #f5f5f5;
-  --muted: #9a9a9a;
-  --accent: #4ade80;
-  --danger: #f87171;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0b0b0b;
+      color: #eaeaea;
+    }
 
-* {
-  box-sizing: border-box;
-}
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
 
-body {
-  margin: 0;
-  padding: 24px;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
+    h1 {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
 
-h1 {
-  margin-top: 0;
-  font-size: 32px;
-}
+    .subtitle {
+      color: #9aa0a6;
+      margin-bottom: 30px;
+    }
 
-h2 {
-  font-size: 20px;
-  margin-bottom: 8px;
-}
+    .card {
+      background: #141414;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+    }
 
-p {
-  color: var(--muted);
-}
+    button {
+      background: #222;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      margin-right: 8px;
+    }
 
-/* =====================
-   LAYOUT
-===================== */
-.container {
-  max-width: 1100px;
-  margin: auto;
-}
+    button:hover {
+      background: #2c2c2c;
+    }
 
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
+    .primary {
+      background: #22c55e;
+      color: #000;
+      font-weight: 600;
+    }
 
-.row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
+    .primary:hover {
+      background: #16a34a;
+    }
 
-/* =====================
-   INPUTS
-===================== */
-textarea {
-  width: 100%;
-  min-height: 90px;
-  resize: vertical;
-  padding: 12px;
-  background: #0f0f0f;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: 14px;
-}
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      background: #0f0f0f;
+      color: #fff;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      resize: vertical;
+    }
 
-textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-}
+    .mode-btn {
+      margin-bottom: 10px;
+    }
 
-/* =====================
-   BUTTONS
-===================== */
-button {
-  background: #1f1f1f;
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-}
+    #output {
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
 
-button:hover {
-  border-color: var(--accent);
-}
-
-button.primary {
-  background: var(--accent);
-  color: #000;
-  border: none;
-}
-
-button.danger {
-  border-color: var(--danger);
-  color: var(--danger);
-}
-
-/* =====================
-   OUTPUT
-===================== */
-.output {
-  white-space: pre-wrap;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.hidden {
-  display: none;
-}
-
-/* =====================
-   HISTORY
-===================== */
-.history-item {
-  padding: 10px;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-}
-
-.history-item:hover {
-  background: #1c1c1c;
-}
-
-footer {
-  text-align: center;
-  margin-top: 40px;
-  color: var(--muted);
-  font-size: 12px;
-}
-</style>
+    footer {
+      text-align: center;
+      color: #555;
+      font-size: 13px;
+      margin-top: 40px;
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
+  <div class="container">
+    <h1>Paste Chaos Here</h1>
+    <div class="subtitle">
+      Turn links, notes, tweets, screenshots, and mess into one clean page.
+    </div>
 
-<h1>Paste Chaos Here</h1>
-<p>Turn links, notes, tweets, screenshots, and mess into one clean page.</p>
+    <div class="card">
+      <h3>Inputs</h3>
+      <button onclick="addInput()">+ Add Input</button>
+      <button onclick="clearInputs()">Clear</button>
+      <div id="inputs"></div>
+    </div>
 
-<!-- INPUT PANEL -->
-<div class="panel">
-  <h2>Inputs</h2>
-  <div id="inputs"></div>
+    <div class="card">
+      <h3>Mode</h3>
+      <button class="mode-btn" onclick="setMode('summary')">Summary</button>
+      <button class="mode-btn" onclick="setMode('timeline')">Timeline</button>
+      <button class="mode-btn" onclick="setMode('drama')">Drama</button>
+      <button class="mode-btn" onclick="setMode('eli5')">ELI5</button>
+      <button class="mode-btn" onclick="setMode('investor')">Investor</button>
+      <div style="margin-top:10px;color:#888">
+        Current mode: <span id="currentMode">summary</span>
+      </div>
+    </div>
 
-  <div class="row">
-    <button onclick="addInput()">+ Add Input</button>
-    <button onclick="clearInputs()" class="danger">Clear</button>
+    <div class="card">
+      <button class="primary" onclick="cleanMess()">Clean This Mess</button>
+    </div>
+
+    <div class="card">
+      <h3>Result</h3>
+      <div id="output"></div>
+    </div>
+
+    <footer>
+      Built ugly. Works great.
+    </footer>
   </div>
-</div>
 
-<!-- OPTIONS -->
-<div class="panel">
-  <h2>Mode</h2>
-  <div class="row">
-    <button onclick="setMode('summary')">Summary</button>
-    <button onclick="setMode('timeline')">Timeline</button>
-    <button onclick="setMode('drama')">Drama</button>
-    <button onclick="setMode('eli5')">ELI5</button>
-    <button onclick="setMode('investor')">Investor</button>
-  </div>
-  <p id="modeLabel">Current mode: summary</p>
-</div>
-
-<!-- ACTION -->
-<div class="panel">
-  <button class="primary" onclick="cleanChaos()">Clean This Mess</button>
-  <span id="status"></span>
-</div>
-
-<!-- OUTPUT -->
-<div class="panel hidden" id="outputPanel">
-  <h2>Result</h2>
-  <div id="output" class="output"></div>
-  <div class="row">
-    <button onclick="copyOutput()">Copy</button>
-    <button onclick="saveToHistory()">Save</button>
-  </div>
-</div>
-
-<!-- HISTORY -->
-<div class="panel">
-  <h2>History</h2>
-  <div id="history"></div>
-</div>
-
-<footer>
-  Built ugly. Works great.
-</footer>
-
-</div>
-
-<script src="script.js"></script>
-   
+  <!-- IMPORTANT: script goes LAST -->
+  <script src="script.js"></script>
 </body>
 </html>
