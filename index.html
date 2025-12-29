@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Paste Chaos Here</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+/* =====================
+   BASE STYLES
+===================== */
+:root {
+  --bg: #0b0b0b;
+  --panel: #161616;
+  --border: #2a2a2a;
+  --text: #f5f5f5;
+  --muted: #9a9a9a;
+  --accent: #4ade80;
+  --danger: #f87171;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 32px;
+}
+
+h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+p {
+  color: var(--muted);
+}
+
+/* =====================
+   LAYOUT
+===================== */
+.container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* =====================
+   INPUTS
+===================== */
+textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  padding: 12px;
+  background: #0f0f0f;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* =====================
+   BUTTONS
+===================== */
+button {
+  background: #1f1f1f;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button.primary {
+  background: var(--accent);
+  color: #000;
+  border: none;
+}
+
+button.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* =====================
+   OUTPUT
+===================== */
+.output {
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.hidden {
+  display: none;
+}
+
+/* =====================
+   HISTORY
+===================== */
+.history-item {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.history-item:hover {
+  background: #1c1c1c;
+}
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  color: var(--muted);
+  font-size: 12px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Paste Chaos Here</h1>
+<p>Turn links, notes, tweets, screenshots, and mess into one clean page.</p>
+
+<!-- INPUT PANEL -->
+<div class="panel">
+  <h2>Inputs</h2>
+  <div id="inputs"></div>
+
+  <div class="row">
+    <button onclick="addInput()">+ Add Input</button>
+    <button onclick="clearInputs()" class="danger">Clear</button>
+  </div>
+</div>
+
+<!-- OPTIONS -->
+<div class="panel">
+  <h2>Mode</h2>
+  <div class="row">
+    <button onclick="setMode('summary')">Summary</button>
+    <button onclick="setMode('timeline')">Timeline</button>
+    <button onclick="setMode('drama')">Drama</button>
+    <button onclick="setMode('eli5')">ELI5</button>
+    <button onclick="setMode('investor')">Investor</button>
+  </div>
+  <p id="modeLabel">Current mode: summary</p>
+</div>
+
+<!-- ACTION -->
+<div class="panel">
+  <button class="primary" onclick="cleanChaos()">Clean This Mess</button>
+  <span id="status"></span>
+</div>
+
+<!-- OUTPUT -->
+<div class="panel hidden" id="outputPanel">
+  <h2>Result</h2>
+  <div id="output" class="output"></div>
+  <div class="row">
+    <button onclick="copyOutput()">Copy</button>
+    <button onclick="saveToHistory()">Save</button>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="panel">
+  <h2>History</h2>
+  <div id="history"></div>
+</div>
+
+<footer>
+  Built ugly. Works great.
+</footer>
+
+</div>
+
+<script>
+/* =====================
+   STATE
+===================== */
+let mode = "summary";
+let inputsDiv = document.getElementById("inputs");
+let historyDiv = document.getElementById("history");
+
+addInput();
+
+/* =====================
+   INPUT MANAGEMENT
+===================== */
+function addInput(value = "") {
+  const ta = document.createElement("textarea");
+  ta.placeholder = "Paste text or URL...";
+  ta.value = value;
+  inputsDiv.appendChild(ta);
+}
+
+function clearInputs() {
+  inputsDiv.innerHTML = "";
+  addInput();
+}
+
+/* =====================
+   MODE
+===================== */
+function setMode(m) {
+  mode = m;
+  document.getElementById("modeLabel").innerText = "Current mode: " + m;
+}
+
+/* =====================
+   CLEAN
+===================== */
+async function cleanChaos() {
+  const inputs = Array.from(inputsDiv.querySelectorAll("textarea"))
+    .map(t => t.value.trim())
+    .filter(Boolean);
+
+  if (!inputs.length) {
+    alert("Paste something first.");
+    return;
+  }
+
+  setStatus("Cleaning chaos...");
+  hideOutput();
+
+  try {
+    const res = await fetch("https://YOUR-BACKEND-URL/api/clean", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inputs, mode })
+    });
+
+    const data = await res.json();
+    showOutput(data.output);
+    setStatus("Done.");
+  } catch (e) {
+    setStatus("Error connecting to backend.");
+  }
+}
+
+/* =====================
+   OUTPUT
+===================== */
+function showOutput(text) {
+  document.getElementById("output").innerText = text;
+  document.getElementById("outputPanel").classList.remove("hidden");
+}
+
+function hideOutput() {
+  document.getElementById("outputPanel").classList.add("hidden");
+}
+
+function copyOutput() {
+  navigator.clipboard.writeText(
+    document.getElementById("output").innerText
+  );
+}
+
+/* =====================
+   HISTORY
+===================== */
+function saveToHistory() {
+  const entry = {
+    date: new Date().toISOString(),
+    output: document.getElementById("output").innerText
+  };
+
+  const items = getHistory();
+  items.unshift(entry);
+  localStorage.setItem("history", JSON.stringify(items));
+  renderHistory();
+}
+
+function getHistory() {
+  return JSON.parse(localStorage.getItem("history") || "[]");
+}
+
+function renderHistory() {
+  historyDiv.innerHTML = "";
+  getHistory().forEach(item => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerText = item.date;
+    div.onclick = () => showOutput(item.output);
+    historyDiv.appendChild(div);
+  });
+}
+
+function setStatus(msg) {
+  document.getElementById("status").innerText = msg;
+}
+
+renderHistory();
+</script>
+
+</body>
+</html>
