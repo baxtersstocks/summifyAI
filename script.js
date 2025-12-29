@@ -1,42 +1,36 @@
-// --------------------
-// GLOBAL STATE
-// --------------------
-let mode = "summary";
+let currentMode = "summary";
 
-// --------------------
-// ADD INPUT BOX
-// --------------------
-function addInput() {
-  const textarea = document.createElement("textarea");
-  textarea.placeholder = "Paste a link, article, note, tweet, etc...";
-  document.getElementById("inputs").appendChild(textarea);
+// -------- MODE BUTTONS --------
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById("currentMode").innerText = mode;
 }
 
-// --------------------
-// CLEAR ALL INPUTS
-// --------------------
+// -------- ADD INPUT --------
+function addInput() {
+  const container = document.getElementById("inputs");
+  const textarea = document.createElement("textarea");
+  textarea.className = "input-box";
+  textarea.placeholder = "Paste text or a URL here...";
+  container.appendChild(textarea);
+}
+
+// -------- CLEAR INPUTS --------
 function clearInputs() {
   document.getElementById("inputs").innerHTML = "";
   document.getElementById("output").innerText = "";
 }
 
-// --------------------
-// SET MODE
-// --------------------
-function setMode(newMode) {
-  mode = newMode;
-  document.getElementById("currentMode").innerText = newMode;
-}
-
-// --------------------
-// MAIN ACTION: CLEAN MESS
-// --------------------
+// -------- MAIN CLEAN FUNCTION --------
 async function cleanMess() {
-  const inputElements = document.querySelectorAll("#inputs textarea");
-  const text = Array.from(inputElements)
-    .map(t => t.value.trim())
-    .filter(Boolean)
-    .join("\n\n");
+  const inputs = document.querySelectorAll(".input-box");
+  let text = "";
+
+  inputs.forEach(input => {
+    if (input.value.trim()) {
+      text += input.value.trim() + "\n\n";
+    }
+  });
 
   if (!text) {
     alert("Add some input first.");
@@ -47,19 +41,19 @@ async function cleanMess() {
   output.innerText = "Cleaning mess…";
 
   try {
-   const response = await fetch(
-  "https://summifyai-backend123-o81wgftcq-baxters-projects-10a4be27.vercel.app/api/clean",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      text,
-      mode
-    })
-  }
-);
+    const response = await fetch(
+      "https://summifyai-backend123-o81wgftcq-baxters-projects-10a4be27.vercel.app/api/clean",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          text,
+          mode: currentMode
+        })
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Server error");
@@ -68,11 +62,19 @@ async function cleanMess() {
     const data = await response.json();
 
     if (data.error) {
-      throw new Error(data.error);
+      output.innerText = "Error: " + data.error;
+      return;
     }
 
-    output.innerText = data.result;
+    output.innerText = data.result || "No result returned.";
+
   } catch (err) {
-    output.innerText = "Error: " + err.message;
+    console.error(err);
+    output.innerText = "Error: Failed to fetch";
   }
 }
+
+// -------- INITIAL INPUT --------
+window.onload = () => {
+  addInput();
+};
