@@ -258,7 +258,13 @@ async function cleanChaos() {
   hideOutput();
 
   try {
-    const res = await fetch("https://YOUR-BACKEND-URL/api/clean", {
+  fetch("https://summifyai-backend123.vercel.app/api/clean", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ url })
+})
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ inputs, mode })
