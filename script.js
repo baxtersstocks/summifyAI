@@ -47,19 +47,19 @@ async function cleanMess() {
   output.innerText = "Cleaning mess…";
 
   try {
-    const response = await fetch(
- "https://summifyai-backend123-o81wgftcq-baxters-projects-10a4be27.vercel.app/api/clean"
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          text,
-          mode
-        })
-      }
-    );
+   const response = await fetch(
+  "https://summifyai-backend123-o81wgftcq-baxters-projects-10a4be27.vercel.app/api/clean",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      text,
+      mode
+    })
+  }
+);
 
     if (!response.ok) {
       throw new Error("Server error");
